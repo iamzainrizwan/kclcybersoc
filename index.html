@@ -12,7 +12,7 @@
 <link rel="icon" href="/assets/logo.png">
 <style>
 /* kcl cybersoc landing page. house style: terminal window, black on off-white,
-   with a dark theme. responsive: a wider two-column desktop, a lean mobile. */
+   with a dark theme. wide two-column desktop dashboard, lean single-column mobile. */
 @font-face { font-family:'IBM Plex Mono'; font-weight:400; src:url(/fonts/IBMPlexMono-400.woff2) format('woff2'); }
 @font-face { font-family:'IBM Plex Mono'; font-weight:700; src:url(/fonts/IBMPlexMono-700.woff2) format('woff2'); }
 @font-face { font-family:'JetBrains Mono'; font-weight:800; src:url(/fonts/JetBrainsMono-800.woff2) format('woff2'); }
@@ -32,8 +32,8 @@
 * { box-sizing:border-box; margin:0; padding:0; }
 html, body { background:var(--paper); color:var(--ink); }
 body { font-family:'IBM Plex Mono',monospace; font-size:16px; line-height:1.5; padding:24px 16px; display:flex; justify-content:center; }
-.win { width:100%; max-width:880px; border:2px solid var(--line); background:var(--paper); }
-.chrome { display:flex; align-items:center; height:42px; padding:0 14px; border-bottom:2px solid var(--line); }
+.win { width:100%; max-width:1180px; border:2px solid var(--line); background:var(--paper); }
+.chrome { display:flex; align-items:center; gap:10px; height:44px; padding:0 14px; border-bottom:2px solid var(--line); }
 .dots { display:flex; gap:5px; }
 .dots i { width:11px; height:11px; border:2px solid var(--ink); border-radius:50%; }
 .dots i:first-child { background:var(--ink); }
@@ -41,16 +41,16 @@ body { font-family:'IBM Plex Mono',monospace; font-size:16px; line-height:1.5; p
 .theme { font-family:inherit; font-size:13px; background:none; border:2px solid var(--ink); color:var(--ink);
          padding:3px 10px; cursor:pointer; }
 .theme:hover, .theme:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
-.body { padding:36px 28px 30px; }
+.body { padding:34px 26px 30px; }
 
 .logo { width:62px; height:75px; background:var(--ink); margin-bottom:16px;
         -webkit-mask:url(/assets/shield-mask.png) center/contain no-repeat;
         mask:url(/assets/shield-mask.png) center/contain no-repeat; }
 .kicker { color:var(--dim); font-size:14px; }
-h1 { font-family:'JetBrains Mono',monospace; font-weight:800; line-height:1.02;
-     font-size:clamp(38px, 10vw, 72px); letter-spacing:-.02em; margin:8px 0 14px; }
-.inv { background:var(--ink); color:var(--paper); padding:0 .08em .06em; }
-.tagline { font-size:clamp(16px, 2.4vw, 19px); max-width:40ch; }
+h1 { font-family:'JetBrains Mono',monospace; font-weight:800; line-height:1.12;
+     font-size:clamp(38px, 9vw, 66px); letter-spacing:-.02em; margin:8px 0 16px; }
+.inv { background:var(--ink); color:var(--paper); padding:.02em .1em .08em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+.tagline { font-size:clamp(16px, 2.2vw, 19px); max-width:42ch; }
 
 .cta { display:flex; flex-wrap:wrap; gap:12px; margin:24px 0 2px; }
 .btn { display:inline-flex; align-items:center; gap:8px; padding:12px 18px; border:2px solid var(--ink);
@@ -59,24 +59,30 @@ h1 { font-family:'JetBrains Mono',monospace; font-weight:800; line-height:1.02;
 .btn:hover, .btn:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
 .btn.solid:hover, .btn.solid:focus-visible { background:var(--paper); color:var(--ink); }
 
-/* hero: desktop gets a side "specs" panel; mobile drops it */
-.hero { display:grid; grid-template-columns:1fr; gap:28px; align-items:start; }
-.specs { display:none; }
-section { margin-top:42px; }
 .prompt { color:var(--dim); font-size:14px; margin-bottom:12px; }
 .prompt b { color:var(--ink); font-weight:400; }
-.lead { max-width:60ch; }
+
+/* hero: two columns on desktop. left = brand, right = specs + next event. */
+.hero { display:grid; grid-template-columns:1fr; gap:24px; align-items:stretch; }
+.hero-side { display:flex; flex-direction:column; gap:20px; }
+.specs { display:none; border:2px solid var(--ink); padding:16px; }
+.specs .h { font-size:13px; color:var(--dim); margin-bottom:8px; }
+.specs .srow { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--dim); }
+.specs .srow:last-child { border-bottom:0; }
+.specs .k { color:var(--dim); } .specs .v { font-weight:700; text-align:right; }
+
+.event { border:2px solid var(--ink); background:var(--ink); color:var(--paper); padding:18px; }
+.event .name { font-weight:700; font-size:19px; }
+.event .when { color:var(--faint); display:block; margin-top:4px; }
+.event .blurb { color:var(--faint); font-size:14px; display:block; margin-top:10px; }
+
+section { margin-top:44px; }
+.lead { max-width:68ch; }
 
 .grid { display:grid; grid-template-columns:1fr; gap:12px; }
 .card { border:2px solid var(--ink); padding:16px 16px 14px; }
 .card h3 { font-size:16px; }
 .card p { color:var(--dim); font-size:14px; margin-top:4px; }
-
-.event { border:2px solid var(--ink); background:var(--ink); color:var(--paper); padding:18px; display:flex;
-         flex-wrap:wrap; align-items:baseline; gap:6px 14px; }
-.event .name { font-weight:700; font-size:19px; }
-.event .when, .event .blurb { color:var(--faint); }
-.event .blurb { flex-basis:100%; font-size:14px; }
 
 .links { list-style:none; display:grid; grid-template-columns:1fr; gap:10px; }
 .links a { display:flex; align-items:baseline; gap:10px; padding:12px 14px; border:2px solid var(--ink);
@@ -91,19 +97,20 @@ section { margin-top:42px; }
 .status .seg { font-weight:700; }
 .status .fill { flex:1; background:var(--ink); color:var(--paper); overflow:hidden; text-overflow:ellipsis; }
 
-/* ---- desktop layout ---- */
+/* ---- tablet ---- */
 @media (min-width:680px) {
-  .body { padding:44px 40px 34px; }
+  .body { padding:44px 40px 36px; }
   .grid { grid-template-columns:1fr 1fr; }
   .links { grid-template-columns:1fr 1fr; }
 }
-@media (min-width:820px) {
-  .hero { grid-template-columns:1.6fr 1fr; }
-  .specs { display:block; border:2px solid var(--ink); padding:16px; align-self:stretch; }
-  .specs .srow { display:flex; justify-content:space-between; gap:12px; padding:6px 0; border-bottom:1px dashed var(--dim); }
-  .specs .srow:last-child { border-bottom:0; }
-  .specs .k { color:var(--dim); } .specs .v { font-weight:700; text-align:right; }
-  .specs .h { font-size:13px; color:var(--dim); margin-bottom:6px; }
+/* ---- desktop: use the width ---- */
+@media (min-width:900px) {
+  .hero { grid-template-columns:1.5fr 1fr; gap:36px; }
+  .specs { display:block; }
+  .hero-side { justify-content:space-between; }
+  .grid { grid-template-columns:repeat(4, 1fr); }
+  .links { grid-template-columns:repeat(4, 1fr); }
+  .lead { font-size:18px; }
 }
 </style>
 </head>
@@ -117,24 +124,34 @@ section { margin-top:42px; }
   <div class="body">
 
     <header class="hero">
-      <div>
+      <div class="hero-main">
         <div class="logo" role="img" aria-label="kcl cyber security society logo"></div>
         <div class="kicker">// king's college london</div>
         <h1>cyber <span class="inv">security</span> society</h1>
         <p class="tagline">ctfs, hands-on workshops and careers in security. no experience needed.</p>
         <div class="cta">
-          <a class="btn solid" href="https://discord.gg/psUBMkZR">join the discord -&gt;</a>
+          <a class="btn solid" href="https://discord.gg/FMy64eRAqY">join the discord -&gt;</a>
           <a class="btn" href="https://www.kclsu.org/groups/activities/join/group/kcss18750">become a member (free)</a>
         </div>
       </div>
-      <aside class="specs" aria-hidden="true">
-        <div class="h">// cat society.cfg</div>
-        <div class="srow"><span class="k">est.</span><span class="v">2020</span></div>
-        <div class="srow"><span class="k">home</span><span class="v">kclsu</span></div>
-        <div class="srow"><span class="k">members</span><span class="v">free</span></div>
-        <div class="srow"><span class="k">level</span><span class="v">beginner+</span></div>
-        <div class="srow"><span class="k">bring</span><span class="v">a laptop</span></div>
-      </aside>
+      <div class="hero-side">
+        <aside class="specs" aria-hidden="true">
+          <div class="h">// cat society.cfg</div>
+          <div class="srow"><span class="k">est.</span><span class="v">2020</span></div>
+          <div class="srow"><span class="k">home</span><span class="v">kclsu</span></div>
+          <div class="srow"><span class="k">members</span><span class="v">free</span></div>
+          <div class="srow"><span class="k">level</span><span class="v">beginner+</span></div>
+          <div class="srow"><span class="k">bring</span><span class="v">a laptop</span></div>
+        </aside>
+        <div>
+          <div class="prompt">$ <b>cat next-event</b></div>
+          <div class="event">
+            <span class="name">patch wednesday</span>
+            <span class="when">wed 28 oct &middot; 14:00&ndash;16:00 &middot; bush house (s) 6.03</span>
+            <span class="blurb">blue team: we hand you a broken web app, you write the fix and ship it. bring a laptop. no experience needed.</span>
+          </div>
+        </div>
+      </div>
     </header>
 
     <section>
@@ -155,19 +172,10 @@ section { margin-top:42px; }
     </section>
 
     <section>
-      <div class="prompt">$ <b>cat next-event</b></div>
-      <div class="event">
-        <span class="name">patch wednesday</span>
-        <span class="when">wed 28 oct &middot; 14:00&ndash;16:00 &middot; bush house (s) 6.03</span>
-        <span class="blurb">blue team: we hand you a broken web app, you write the fix and ship it. bring a laptop. no experience needed.</span>
-      </div>
-    </section>
-
-    <section>
       <div class="prompt">$ <b>cat contact</b></div>
       <ul class="links">
-        <li><a href="https://discord.gg/psUBMkZR"><span class="label">discord</span><span class="note">events + chat</span></a></li>
-        <li><a href="https://www.instagram.com/kclcybersoc/"><span class="label">instagram</span><span class="note">@kclcybersoc</span></a></li>
+        <li><a href="https://discord.gg/FMy64eRAqY"><span class="label">discord</span><span class="note">events + chat</span></a></li>
+        <li><a href="https://www.instagram.com/kclcybersociety/"><span class="label">instagram</span><span class="note">@kclcybersociety</span></a></li>
         <li><a href="https://www.linkedin.com/company/kcl-cyber-security-society/"><span class="label">linkedin</span><span class="note">kcl cyber security society</span></a></li>
         <li><a href="/phonelinks"><span class="label">all links</span><span class="note">link-in-bio page</span></a></li>
       </ul>
