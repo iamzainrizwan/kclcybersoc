@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kcl cybersoc links</title>
+<meta name="description" content="kcl cyber security society: discord, instagram, linkedin, membership and what's on.">
+<meta property="og:title" content="kcl cyber security society">
+<meta property="og:description" content="discord, instagram, linkedin, membership and what's on.">
+<link rel="icon" href="/assets/logo.png">
+<style>
+/* link-in-bio page in the cybersoc-ig house style. edit LINKS below; [word] inverts, *word* bolds. */
+@font-face { font-family:'IBM Plex Mono'; font-weight:400; src:url(/fonts/IBMPlexMono-400.woff2) format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-weight:700; src:url(/fonts/IBMPlexMono-700.woff2) format('woff2'); }
+@font-face { font-family:'JetBrains Mono'; font-weight:800; src:url(/fonts/JetBrainsMono-800.woff2) format('woff2'); }
+:root { --ink:#0a0a0a; --paper:#fbfbf8; --dim:#8c8c88; }
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { background:var(--paper); color:var(--ink); }
+body { font-family:'IBM Plex Mono',monospace; font-size:16px; line-height:1.45; min-height:100vh; display:flex; justify-content:center; padding:24px 16px; }
+.win { width:100%; max-width:520px; border:2px solid var(--ink); display:flex; flex-direction:column; align-self:flex-start; }
+.chrome { display:flex; align-items:center; height:40px; padding:0 14px; border-bottom:2px solid var(--ink); font-size:14px; }
+.dots { display:flex; gap:5px; width:60px; }
+.dots i { width:11px; height:11px; border:2px solid var(--ink); border-radius:50%; }
+.dots i:first-child { background:var(--ink); }
+.chrome .title { flex:1; text-align:center; margin-right:60px; }
+.body { padding:28px 22px 24px; }
+.kicker { color:var(--dim); font-size:14px; }
+h1 { font-family:'JetBrains Mono',monospace; font-weight:800; font-size:clamp(28px, 9vw, 50px); line-height:1.04; white-space:nowrap; margin:6px 0 10px; }
+.inv { background:var(--ink); color:var(--paper); padding:0 .1em .06em; margin-left:-.1em; }
+.cursor { display:inline-block; width:.48em; height:.74em; background:var(--ink); margin-left:.1em; vertical-align:-.02em; animation:blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity:0; } }
+.bio { margin-bottom:22px; }
+.prompt { color:var(--dim); margin:18px 0 8px; font-size:14px; }
+.prompt b { color:var(--ink); font-weight:400; }
+ul { list-style:none; display:flex; flex-direction:column; gap:10px; }
+a.link { display:flex; align-items:baseline; gap:12px; padding:12px 14px; border:2px solid var(--ink); color:var(--ink); text-decoration:none; }
+a.link .arrow { flex:none; }
+a.link .text { flex:1; min-width:0; display:flex; flex-direction:column; }
+a.link .label { font-weight:700; }
+a.link .note { color:var(--dim); font-size:13px; }
+a.link.hot { background:var(--ink); color:var(--paper); }
+a.link.hot .note { color:#c8c8c4; }
+a.link:hover, a.link:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
+a.link:hover .note, a.link:focus-visible .note { color:#c8c8c4; }
+a.link.hot:hover, a.link.hot:focus-visible { background:var(--paper); color:var(--ink); }
+.status { display:flex; font-size:13px; border-top:2px solid var(--ink); }
+.status span { padding:8px 12px; white-space:nowrap; }
+.status .seg { font-weight:700; }
+.status .fill { flex:1; background:var(--ink); color:var(--paper); overflow:hidden; text-overflow:ellipsis; }
+</style>
+</head>
+<body>
+<main class="win">
+  <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="title">ls ~/links</div></div>
+  <div class="body">
+    <div class="kicker">// kcl cyber security society</div>
+    <h1>kcl <span class="inv">cybersoc</span><span class="cursor"></span></h1>
+    <p class="bio">ctfs, hands-on workshops and careers in security. no experience needed.</p>
+    <div id="links"></div>
+  </div>
+  <div class="status"><span class="seg">[cybersoc]</span><span class="fill">0:links*</span><span class="seg">@kclcybersoc</span></div>
+</main>
+<script>
+// one group per heading; hot: true draws the button inverted (use it for whatever's on this week)
+const LINKS = [
+  { heading: "what's on", items: [
+    { label: 'patch wednesday', note: 'wed 28.10 · 14:00', url: 'https://github.com/iamzainrizwan/patch-wednesday', hot: true },
+  ]},
+  { heading: 'join', items: [
+    { label: 'discord', note: 'events + chat', url: 'https://discord.gg/psUBMkZR' },
+    { label: 'kclsu membership', note: 'free', url: 'https://www.kclsu.org/groups/activities/join/group/kcss18750' },
+  ]},
+  { heading: 'follow', items: [
+    { label: 'instagram', note: '@kclcybersoc', url: 'https://www.instagram.com/kclcybersoc/' },
+    { label: 'linkedin', note: 'kcl cyber security society', url: 'https://www.linkedin.com/company/kcl-cyber-security-society/' },
+  ]},
+];
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+document.getElementById('links').innerHTML = LINKS.map(g => `
+  <div class="prompt">$ ls <b>${esc(g.heading)}/</b></div>
+  <ul>${g.items.map(l => `<li><a class="link${l.hot ? ' hot' : ''}" href="${esc(l.url)}" target="_blank" rel="noopener">
+    <span class="arrow">-&gt;</span><span class="text"><span class="label">${esc(l.label)}</span>${l.note ? `<span class="note">${esc(l.note)}</span>` : ''}</span></a></li>`).join('')}</ul>`).join('');
+</script>
+</body>
+</html>
