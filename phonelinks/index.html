@@ -36,6 +36,9 @@ body { font-family:'IBM Plex Mono',monospace; font-size:16px; line-height:1.45; 
 .theme { font-family:inherit; font-size:12px; background:none; border:2px solid var(--ink); color:var(--ink); padding:2px 8px; cursor:pointer; }
 .theme:hover, .theme:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
 .body { padding:28px 22px 24px; }
+.logo { width:52px; height:63px; background:var(--ink); margin-bottom:12px;
+        -webkit-mask:url(/assets/shield-mask.png) center/contain no-repeat;
+        mask:url(/assets/shield-mask.png) center/contain no-repeat; }
 .kicker { color:var(--dim); font-size:14px; }
 h1 { font-family:'JetBrains Mono',monospace; font-weight:800; font-size:clamp(28px, 9vw, 50px); line-height:1.04; white-space:nowrap; margin:6px 0 10px; }
 .inv { background:var(--ink); color:var(--paper); padding:0 .1em .06em; margin-left:-.1em; }
@@ -65,6 +68,7 @@ a.link.hot:hover, a.link.hot:focus-visible { background:var(--paper); color:var(
 <main class="win">
   <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="title">ls ~/links</div><button class="theme" id="theme" type="button" aria-label="toggle dark and light mode">theme</button></div>
   <div class="body">
+    <div class="logo" role="img" aria-label="kcl cyber security society logo"></div>
     <div class="kicker">// kcl cyber security society</div>
     <h1>kcl <span class="inv">cybersoc</span><span class="cursor"></span></h1>
     <p class="bio">ctfs, hands-on workshops and careers in security. no experience needed.</p>

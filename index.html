@@ -43,6 +43,9 @@ body { font-family:'IBM Plex Mono',monospace; font-size:16px; line-height:1.5; p
 .theme:hover, .theme:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
 .body { padding:36px 28px 30px; }
 
+.logo { width:62px; height:75px; background:var(--ink); margin-bottom:16px;
+        -webkit-mask:url(/assets/shield-mask.png) center/contain no-repeat;
+        mask:url(/assets/shield-mask.png) center/contain no-repeat; }
 .kicker { color:var(--dim); font-size:14px; }
 h1 { font-family:'JetBrains Mono',monospace; font-weight:800; line-height:1.02;
      font-size:clamp(38px, 10vw, 72px); letter-spacing:-.02em; margin:8px 0 14px; }
@@ -115,6 +118,7 @@ section { margin-top:42px; }
 
     <header class="hero">
       <div>
+        <div class="logo" role="img" aria-label="kcl cyber security society logo"></div>
         <div class="kicker">// king's college london</div>
         <h1>cyber <span class="inv">security</span> society</h1>
         <p class="tagline">ctfs, hands-on workshops and careers in security. no experience needed.</p>
