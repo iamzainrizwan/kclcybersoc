@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>patch wednesday ~ kcl cyber security society</title>
+<meta name="description" content="patch wednesday: a blue-team workshop. we hand you a broken web app with five real vulnerability classes; you ship the fix. find each bug, run the exploit in your browser, read the real-world CVE, and patch it properly.">
+<meta property="og:title" content="patch wednesday ~ kcl cybersoc">
+<meta property="og:description" content="blue team: five deliberate bugs in a web app. run each exploit in the browser, read the CVE, ship the fix.">
+<meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0c0c" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/logo.png">
+<style>
+/* patch wednesday page. same house style as the landing page: terminal window,
+   black on off-white, dark theme, mono type. adds "lab" blocks: a sandbox where
+   a bug can be exploited in the browser, and a cve block citing the real thing. */
+@font-face { font-family:'IBM Plex Mono'; font-weight:400; src:url(/fonts/IBMPlexMono-400.woff2) format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-weight:700; src:url(/fonts/IBMPlexMono-700.woff2) format('woff2'); }
+@font-face { font-family:'JetBrains Mono'; font-weight:800; src:url(/fonts/JetBrainsMono-800.woff2) format('woff2'); }
+
+:root { color-scheme:light dark;
+        --ink:#0a0a0a; --paper:#fbfbf8; --dim:#8c8c88; --line:#0a0a0a;
+        --faint:color-mix(in srgb, var(--paper) 70%, var(--ink));
+        --bad:#b01212; --good:#1f7a1f; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ink:#ededea; --paper:#0c0c0c; --dim:#7d7d79; --line:#ededea;
+        --bad:#ff5b5b; --good:#53c853; }
+}
+:root[data-theme="light"] { color-scheme:light; }
+:root[data-theme="dark"] { color-scheme:dark; --ink:#ededea; --paper:#0c0c0c; --dim:#7d7d79; --line:#ededea;
+        --bad:#ff5b5b; --good:#53c853; }
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { background:var(--paper); color:var(--ink); }
+body { font-family:'IBM Plex Mono',monospace; font-size:16px; line-height:1.5; padding:24px 16px; display:flex; justify-content:center; }
+.win { width:100%; max-width:1180px; border:2px solid var(--line); background:var(--paper); }
+.chrome { display:flex; align-items:center; gap:10px; height:44px; padding:0 14px; border-bottom:2px solid var(--line); }
+.dots { display:flex; gap:5px; }
+.dots i { width:11px; height:11px; border:2px solid var(--ink); border-radius:50%; }
+.dots i:first-child { background:var(--ink); }
+.chrome .title { flex:1; text-align:center; font-size:14px; }
+.chrome a.back { color:var(--dim); text-decoration:none; font-size:13px; }
+.chrome a.back:hover { color:var(--ink); }
+.theme { font-family:inherit; font-size:13px; background:none; border:2px solid var(--ink); color:var(--ink);
+         padding:3px 10px; cursor:pointer; }
+.theme:hover, .theme:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
+.body { padding:34px 26px 30px; }
+
+.logo { width:52px; height:63px; background:var(--ink); margin-bottom:14px;
+        -webkit-mask:url(/assets/shield-mask.png) center/contain no-repeat;
+        mask:url(/assets/shield-mask.png) center/contain no-repeat; }
+.kicker { color:var(--dim); font-size:14px; }
+h1 { font-family:'JetBrains Mono',monospace; font-weight:800; line-height:1.1;
+     font-size:clamp(34px, 8vw, 58px); letter-spacing:-.02em; margin:8px 0 14px; }
+.inv { background:var(--ink); color:var(--paper); padding:.02em .1em .08em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+.tagline { font-size:clamp(16px, 2.2vw, 19px); max-width:58ch; color:var(--ink); }
+
+.cta { display:flex; flex-wrap:wrap; gap:12px; margin:22px 0 2px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:11px 17px; border:2px solid var(--ink);
+       color:var(--ink); text-decoration:none; font-weight:700; font-size:15px; }
+.btn.solid { background:var(--ink); color:var(--paper); }
+.btn:hover, .btn:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
+.btn.solid:hover, .btn.solid:focus-visible { background:var(--paper); color:var(--ink); }
+
+.prompt { color:var(--dim); font-size:14px; margin-bottom:12px; }
+.prompt b { color:var(--ink); font-weight:400; }
+section { margin-top:46px; }
+.lead { max-width:72ch; }
+.lead + .lead { margin-top:14px; }
+
+/* the step list for how the session runs */
+.steps { list-style:none; counter-reset:s; display:grid; gap:10px; max-width:76ch; margin-top:6px; }
+.steps li { counter-increment:s; position:relative; padding:12px 14px 12px 46px; border:2px solid var(--ink); }
+.steps li::before { content:counter(s); position:absolute; left:0; top:0; bottom:0; width:34px;
+        display:flex; align-items:center; justify-content:center; background:var(--ink); color:var(--paper); font-weight:700; }
+.steps b { font-weight:700; }
+.steps code, .lead code, .bug code { background:color-mix(in srgb, var(--ink) 12%, transparent); padding:0 4px; }
+
+/* a bug lab */
+.bug { border:2px solid var(--ink); margin-top:18px; }
+.bug > .head { display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; padding:14px 16px; border-bottom:2px solid var(--ink); }
+.bug .num { font-family:'JetBrains Mono',monospace; font-weight:800; font-size:22px; }
+.bug .name { font-weight:700; font-size:18px; flex:1; min-width:180px; }
+.badge { font-size:12px; border:2px solid var(--dim); color:var(--dim); padding:2px 8px; white-space:nowrap; }
+.badge.cwe { border-color:var(--ink); color:var(--ink); }
+.bug .inner { padding:16px; display:grid; gap:16px; }
+@media (min-width:860px) { .bug .inner { grid-template-columns:1fr 1fr; align-items:start; } }
+.bug .what { grid-column:1 / -1; }
+.bug .what p { max-width:80ch; }
+.bug .what .file { color:var(--dim); font-size:13px; margin-top:8px; }
+.bug .what .file a { color:var(--dim); }
+.bug .what .file a:hover { color:var(--ink); }
+
+/* sandbox */
+.lab { border:2px solid var(--ink); display:flex; flex-direction:column; min-height:100%; }
+.lab .bar { display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:2px solid var(--ink); font-size:13px; }
+.lab .bar .tag { color:var(--dim); flex:1; }
+.toggle { display:inline-flex; border:2px solid var(--ink); font-size:12px; }
+.toggle button { font-family:inherit; font-size:12px; border:0; background:none; color:var(--ink); padding:4px 10px; cursor:pointer; font-weight:700; }
+.toggle button[aria-pressed="true"] { background:var(--ink); color:var(--paper); }
+.lab .io { padding:12px; display:grid; gap:10px; }
+.field { display:grid; gap:4px; }
+.field label { font-size:12px; color:var(--dim); }
+.lab input[type=text] { font-family:inherit; font-size:14px; background:var(--paper); color:var(--ink);
+        border:2px solid var(--ink); padding:8px 10px; width:100%; }
+.lab input[type=text]:focus-visible { outline:2px solid var(--ink); outline-offset:1px; }
+.runrow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.run { font-family:inherit; font-size:14px; font-weight:700; border:2px solid var(--ink); background:var(--ink); color:var(--paper); padding:8px 16px; cursor:pointer; }
+.run:hover, .run:focus-visible { background:var(--paper); color:var(--ink); outline:none; }
+.payloads { display:flex; flex-wrap:wrap; gap:6px; }
+.payloads button { font-family:inherit; font-size:12px; border:2px solid var(--dim); background:none; color:var(--dim); padding:3px 8px; cursor:pointer; }
+.payloads button:hover { border-color:var(--ink); color:var(--ink); }
+.out { border-top:2px solid var(--ink); background:color-mix(in srgb, var(--ink) 6%, transparent);
+       padding:12px; font-size:13px; white-space:pre-wrap; word-break:break-word; min-height:92px; margin-top:auto; }
+.out .line { display:block; }
+.out .muted { color:var(--dim); }
+.out .q { color:var(--dim); }
+.verdict { font-weight:700; }
+.verdict.bad { color:var(--bad); }
+.verdict.good { color:var(--good); }
+
+/* cve block */
+.cve { border:2px solid var(--ink); padding:14px; }
+.cve .h { font-size:12px; color:var(--dim); margin-bottom:8px; letter-spacing:.02em; }
+.cve .id { font-weight:700; font-size:16px; }
+.cve .id a { color:var(--ink); text-decoration:none; border-bottom:2px solid var(--dim); }
+.cve .id a:hover { border-color:var(--ink); }
+.cve p { font-size:14px; margin-top:8px; color:var(--ink); max-width:70ch; }
+.cve .fix { font-size:14px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--dim); }
+.cve .fix b { color:var(--good); }
+.cve .fix a { color:var(--ink); }
+.cve .more { font-size:13px; margin-top:8px; color:var(--dim); }
+.cve .more a { color:var(--dim); }
+.cve .more a:hover { color:var(--ink); }
+
+.note { border:2px solid var(--dim); padding:12px 14px; font-size:13px; color:var(--dim); max-width:76ch; }
+.note b { color:var(--ink); }
+
+.links { list-style:none; display:grid; grid-template-columns:1fr; gap:10px; margin-top:4px; }
+.links a { display:flex; align-items:baseline; gap:10px; padding:12px 14px; border:2px solid var(--ink);
+           color:var(--ink); text-decoration:none; }
+.links a .label { flex:1; font-weight:700; }
+.links a .note2 { color:var(--dim); font-size:13px; }
+.links a:hover, .links a:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
+.links a:hover .note2 { color:var(--faint); }
+
+.status { display:flex; font-size:13px; border-top:2px solid var(--line); }
+.status span { padding:9px 13px; white-space:nowrap; }
+.status .seg { font-weight:700; }
+.status .fill { flex:1; background:var(--ink); color:var(--paper); overflow:hidden; text-overflow:ellipsis; }
+
+@media (min-width:680px) {
+  .body { padding:44px 40px 36px; }
+  .links { grid-template-columns:1fr 1fr; }
+}
+@media (min-width:900px) {
+  .lead { font-size:18px; }
+  .links { grid-template-columns:repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+<main class="win">
+  <div class="chrome">
+    <div class="dots"><i></i><i></i><i></i></div>
+    <div class="title">kclcybersoc ~ patch-wednesday</div>
+    <a class="back" href="/">cd ..</a>
+    <button class="theme" id="theme" type="button" aria-label="toggle dark and light mode">theme</button>
+  </div>
+  <div class="body">
+
+    <header>
+      <div class="logo" role="img" aria-label="kcl cyber security society logo"></div>
+      <div class="kicker">// workshop &middot; blue team</div>
+      <h1>patch <span class="inv">wednesday</span></h1>
+      <p class="tagline">last week you broke things. this week you fix them. we hand you a small members-portal
+      web app with five deliberate security bugs. find each one, run the exploit, read the real-world CVE,
+      and ship the proper fix.</p>
+      <div class="cta">
+        <a class="btn solid" href="https://github.com/iamzainrizwan/patch-wednesday">get the app (template) -&gt;</a>
+        <a class="btn" href="https://discord.gg/FMy64eRAqY">ask in discord</a>
+      </div>
+    </header>
+
+    <section>
+      <div class="prompt">$ <b>cat how-it-works</b></div>
+      <p class="lead">the app is a tiny flask members portal. every bug lives in its own file under
+      <code>challenges/</code>, and every bug ships with two kinds of test: an <b>exploit test</b> that fails
+      while the bug is there, and <b>normal-use tests</b> that check the feature still works. so you can't
+      win by deleting the feature, and you can't win with a blocklist of "bad characters" &mdash; the exploit
+      tests try several shapes of the same trick. a fix counts when the tests go green.</p>
+      <ol class="steps">
+        <li>on <a href="https://github.com/iamzainrizwan/patch-wednesday" style="color:inherit">the template repo</a>, click <b>use this template &rarr; create a new repository</b>, keep it public, and clone your copy.</li>
+        <li>open the <b>actions</b> tab: your first run is a red cross with <b>five failing tests</b>, one per bug.</li>
+        <li>pick a bug below, open its file in <code>challenges/</code>, and fix the <b>one</b> function it points at.</li>
+        <li><code>git add . &amp;&amp; git commit -m "fix" &amp;&amp; git push</code> &mdash; github re-runs the tests. green means patched.</li>
+      </ol>
+      <p class="lead" style="margin-top:16px;color:var(--dim);font-size:14px">each lab below runs the real exploit <b style="color:var(--ink)">in your browser</b> against a
+      faithful copy of the broken logic &mdash; nothing is sent anywhere, and no real system is touched. flip
+      the <b style="color:var(--ink)">vulnerable / patched</b> switch to watch the same payload stop working once the bug is fixed.</p>
+    </section>
+
+    <!-- ===================== BUG LABS ===================== -->
+    <section>
+      <div class="prompt">$ <b>ls challenges/</b></div>
+
+      <!-- 1. SQL injection -->
+      <div class="bug" id="sqli">
+        <div class="head">
+          <span class="num">01</span>
+          <span class="name">login &mdash; SQL injection</span>
+          <span class="badge cwe">CWE-89</span>
+          <span class="badge">walkthrough</span>
+        </div>
+        <div class="inner">
+          <div class="what">
+            <p>the login query pastes your username and password straight into a SQL string, so a crafted
+            username can change what the query <i>means</i> and log you in with no valid password. the fix is
+            to stop mixing input into the query text at all &mdash; use placeholders.</p>
+            <p class="file">// <a href="https://github.com/iamzainrizwan/patch-wednesday/blob/main/challenges/login.py">challenges/login.py</a> &middot; fix <code>check_login()</code></p>
+          </div>
+          <div class="lab" data-lab="sqli">
+            <div class="bar">
+              <span class="tag">POST /login</span>
+              <span class="toggle" role="group" aria-label="mode">
+                <button type="button" data-mode="vuln" aria-pressed="true">vulnerable</button>
+                <button type="button" data-mode="safe" aria-pressed="false">patched</button>
+              </span>
+            </div>
+            <div class="io">
+              <div class="field"><label>username</label><input type="text" data-in="user" value="admin'--" autocomplete="off" spellcheck="false"></div>
+              <div class="field"><label>password</label><input type="text" data-in="pass" value="anything" autocomplete="off" spellcheck="false"></div>
+              <div class="payloads" data-payloads>
+                <button type="button" data-u="admin'--" data-p="x">admin'--</button>
+                <button type="button" data-u="' OR 1=1 --" data-p="x">' OR 1=1 --</button>
+                <button type="button" data-u="alice" data-p="alpaca">real login</button>
+              </div>
+              <div class="runrow"><button class="run" type="button">log in</button></div>
+            </div>
+            <div class="out" data-out></div>
+          </div>
+          <div class="cve">
+            <div class="h">// seen in the wild</div>
+            <div class="id"><a href="https://nvd.nist.gov/vuln/detail/CVE-2014-3704">CVE-2014-3704</a> &mdash; "Drupalgeddon"</div>
+            <p>a pre-auth SQL injection in Drupal 7 core's database layer. sites were mass-compromised within
+            hours of disclosure &mdash; Drupal later said any site not patched within 7 hours should be assumed hacked.</p>
+            <p class="fix"><b>the fix:</b> Drupal 7.32 changed the database API to expand array arguments as
+            proper <b>parameterized placeholders</b> instead of building the query by hand &mdash; exactly what
+            you'll do here. <a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html">OWASP SQLi prevention &rarr;</a></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. IDOR -->
+      <div class="bug" id="idor">
+        <div class="head">
+          <span class="num">02</span>
+          <span class="name">notes &mdash; broken access control (IDOR)</span>
+          <span class="badge cwe">CWE-639</span>
+        </div>
+        <div class="inner">
+          <div class="what">
+            <p>logged-in members read notes at <code>/notes/&lt;id&gt;</code>. the handler looks the note up by
+            id and hands it back &mdash; without checking who it belongs to. change the number in the URL and you
+            read anyone's notes. the fix is a missing ownership check.</p>
+            <p class="file">// <a href="https://github.com/iamzainrizwan/patch-wednesday/blob/main/challenges/notes.py">challenges/notes.py</a> &middot; fix <code>handle()</code></p>
+          </div>
+          <div class="lab" data-lab="idor">
+            <div class="bar">
+              <span class="tag">GET /notes/&lt;id&gt; &nbsp;as <b>alice</b></span>
+              <span class="toggle" role="group" aria-label="mode">
+                <button type="button" data-mode="vuln" aria-pressed="true">vulnerable</button>
+                <button type="button" data-mode="safe" aria-pressed="false">patched</button>
+              </span>
+            </div>
+            <div class="io">
+              <div class="field"><label>note id (you are alice; notes 1 &amp; 2 are yours)</label><input type="text" data-in="id" value="4" autocomplete="off" spellcheck="false"></div>
+              <div class="payloads" data-payloads>
+                <button type="button" data-id="1">1 (yours)</button>
+                <button type="button" data-id="3">3 (bob's)</button>
+                <button type="button" data-id="4">4 (admin's)</button>
+              </div>
+              <div class="runrow"><button class="run" type="button">GET</button></div>
+            </div>
+            <div class="out" data-out></div>
+          </div>
+          <div class="cve">
+            <div class="h">// seen in the wild</div>
+            <div class="id"><a href="https://nvd.nist.gov/vuln/detail/CVE-2023-4836">CVE-2023-4836</a> &mdash; WordPress "User Private Files"</div>
+            <p>an authenticated user could download <i>other</i> members' private files just by changing the file
+            id in the request &mdash; the same missing-ownership-check you're fixing, one <code>?id=</code> apart.</p>
+            <p class="fix"><b>the fix:</b> check that the logged-in user actually <b>owns</b> the object before
+            returning it; treat someone else's id exactly like one that doesn't exist.
+            <a href="https://portswigger.net/web-security/access-control/idor">PortSwigger: IDOR &rarr;</a></p>
+            <p class="more">context: OWASP ranks <a href="https://owasp.org/Top10/A01_2021-Broken_Access_Control/">Broken Access Control</a> the #1 web risk.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Path traversal -->
+      <div class="bug" id="traversal">
+        <div class="head">
+          <span class="num">03</span>
+          <span class="name">files &mdash; path traversal</span>
+          <span class="badge cwe">CWE-22</span>
+        </div>
+        <div class="inner">
+          <div class="what">
+            <p>the download handler joins the <code>name</code> you give it onto the public files folder and
+            opens whatever comes out. put <code>../</code> segments in the name and you walk out of the folder
+            and read files you shouldn't. blocking the literal <code>"../"</code> is not enough &mdash; resolve
+            the real path and check it stays inside the folder.</p>
+            <p class="file">// <a href="https://github.com/iamzainrizwan/patch-wednesday/blob/main/challenges/files.py">challenges/files.py</a> &middot; fix <code>download()</code></p>
+          </div>
+          <div class="lab" data-lab="traversal">
+            <div class="bar">
+              <span class="tag">GET /files/download?name=</span>
+              <span class="toggle" role="group" aria-label="mode">
+                <button type="button" data-mode="vuln" aria-pressed="true">vulnerable</button>
+                <button type="button" data-mode="safe" aria-pressed="false">patched</button>
+              </span>
+            </div>
+            <div class="io">
+              <div class="field"><label>name (public folder has welcome.txt, termcard.txt)</label><input type="text" data-in="name" value="../secret.txt" autocomplete="off" spellcheck="false"></div>
+              <div class="payloads" data-payloads>
+                <button type="button" data-name="welcome.txt">welcome.txt</button>
+                <button type="button" data-name="../secret.txt">../secret.txt</button>
+                <button type="button" data-name="..%2fsecret.txt">..%2fsecret.txt</button>
+                <button type="button" data-name="/etc/passwd">/etc/passwd</button>
+              </div>
+              <div class="runrow"><button class="run" type="button">download</button></div>
+            </div>
+            <div class="out" data-out></div>
+          </div>
+          <div class="cve">
+            <div class="h">// seen in the wild</div>
+            <div class="id"><a href="https://nvd.nist.gov/vuln/detail/CVE-2021-41773">CVE-2021-41773</a> &mdash; Apache httpd 2.4.49</div>
+            <p>a path-traversal flaw in the Apache web server: <code>..%2e</code>-style sequences escaped the
+            document root to read (and, with CGI, run) arbitrary files. actively exploited in the wild within days.</p>
+            <p class="fix"><b>the fix:</b> Apache 2.4.50/2.4.51 properly <b>normalised and confined</b> the
+            resolved path to the configured root. in your version: resolve the real path and require it to live
+            inside the public folder (flask's <code>send_from_directory</code> does this).
+            <a href="https://owasp.org/www-community/attacks/Path_Traversal">OWASP: Path Traversal &rarr;</a></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Open redirect -->
+      <div class="bug" id="redirect">
+        <div class="head">
+          <span class="num">04</span>
+          <span class="name">continue &mdash; open redirect</span>
+          <span class="badge cwe">CWE-601</span>
+          <span class="badge">bonus</span>
+        </div>
+        <div class="inner">
+          <div class="what">
+            <p>links bounce you onward through <code>/go?next=...</code>, and the handler redirects to whatever
+            <code>next</code> says &mdash; including a full URL on another site. an attacker sends a link to
+            <i>our</i> trusted domain that quietly forwards to a lookalike phishing page. allow only redirects
+            that stay on this site.</p>
+            <p class="file">// <a href="https://github.com/iamzainrizwan/patch-wednesday/blob/main/challenges/redirect_after_login.py">challenges/redirect_after_login.py</a> &middot; fix <code>safe_target()</code></p>
+          </div>
+          <div class="lab" data-lab="redirect">
+            <div class="bar">
+              <span class="tag">GET /go?next=</span>
+              <span class="toggle" role="group" aria-label="mode">
+                <button type="button" data-mode="vuln" aria-pressed="true">vulnerable</button>
+                <button type="button" data-mode="safe" aria-pressed="false">patched</button>
+              </span>
+            </div>
+            <div class="io">
+              <div class="field"><label>next</label><input type="text" data-in="next" value="//evil.example/login" autocomplete="off" spellcheck="false"></div>
+              <div class="payloads" data-payloads>
+                <button type="button" data-next="/notes">/notes</button>
+                <button type="button" data-next="//evil.example/login">//evil.example</button>
+                <button type="button" data-next="https:evil.example">https:evil.example</button>
+              </div>
+              <div class="runrow"><button class="run" type="button">follow</button></div>
+            </div>
+            <div class="out" data-out></div>
+          </div>
+          <div class="cve">
+            <div class="h">// seen in the wild</div>
+            <div class="id"><a href="https://nvd.nist.gov/vuln/detail/CVE-2024-54050">CVE-2024-54050</a> &mdash; Adobe Connect</div>
+            <p>a "URL redirection to untrusted site" bug: the app would forward users to an attacker-supplied
+            address, handing phishers a link that starts on a trusted domain. the classic shape is a login
+            <code>?next=</code> parameter &mdash; exactly this one.</p>
+            <p class="fix"><b>the fix:</b> accept only a <b>single local path</b> (empty host, starts with one
+            <code>/</code> but not <code>//</code>); anything pointing at another host falls back to <code>/</code>.
+            <a href="https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html">OWASP: unvalidated redirects &rarr;</a></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Command injection -->
+      <div class="bug" id="cmdi">
+        <div class="head">
+          <span class="num">05</span>
+          <span class="name">tools &mdash; OS command injection</span>
+          <span class="badge cwe">CWE-78</span>
+          <span class="badge">bonus</span>
+        </div>
+        <div class="inner">
+          <div class="what">
+            <p>the "reachability check" pastes the host you type into a shell command string. shell punctuation
+            (<code>;</code>, <code>&amp;&amp;</code>, <code>|</code>) lets you tack on a second command of your
+            choice. the fix is to stop using a shell at all &mdash; pass the program and its arguments as a list,
+            so the input can only ever be one argument.</p>
+            <p class="file">// <a href="https://github.com/iamzainrizwan/patch-wednesday/blob/main/challenges/tools.py">challenges/tools.py</a> &middot; fix <code>run_check()</code></p>
+          </div>
+          <div class="lab" data-lab="cmdi">
+            <div class="bar">
+              <span class="tag">POST /tools &nbsp;runs: echo resolving &lt;host&gt;</span>
+              <span class="toggle" role="group" aria-label="mode">
+                <button type="button" data-mode="vuln" aria-pressed="true">vulnerable</button>
+                <button type="button" data-mode="safe" aria-pressed="false">patched</button>
+              </span>
+            </div>
+            <div class="io">
+              <div class="field"><label>host</label><input type="text" data-in="host" value="localhost; id" autocomplete="off" spellcheck="false"></div>
+              <div class="payloads" data-payloads>
+                <button type="button" data-host="localhost">localhost</button>
+                <button type="button" data-host="localhost; id">localhost; id</button>
+                <button type="button" data-host="x && whoami">x &amp;&amp; whoami</button>
+                <button type="button" data-host="x; cat secret.txt">x; cat secret.txt</button>
+              </div>
+              <div class="runrow"><button class="run" type="button">check</button></div>
+            </div>
+            <div class="out" data-out></div>
+          </div>
+          <div class="cve">
+            <div class="h">// seen in the wild</div>
+            <div class="id"><a href="https://nvd.nist.gov/vuln/detail/CVE-2014-6271">CVE-2014-6271</a> &mdash; "Shellshock"</div>
+            <p>a flaw in Bash let attacker-controlled data smuggle trailing commands into a shell &mdash; a web
+            request could run arbitrary commands on the server. one of the most widely exploited bugs of the decade.</p>
+            <p class="fix"><b>the fix:</b> never hand untrusted input to a shell. pass the program and its args
+            as a <b>list with no <code>shell=True</code></b>, so the whole input is a single argument and nothing
+            extra can run. <a href="https://cheatsheetseries.owasp.org/cheatsheets/OS_Command_Injection_Defense_Cheat_Sheet.html">OWASP: command injection defense &rarr;</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="note">
+        <b>heads up:</b> these are deliberately-vulnerable teaching copies, running entirely in your browser for
+        this workshop. use what you learn only on systems you own or are allowed to test &mdash; running exploits
+        against anything else is a crime under the Computer Misuse Act. the point of blue team is to <b>spot and
+        close</b> these in real code before anyone else finds them.
+      </div>
+    </section>
+
+    <section>
+      <div class="prompt">$ <b>cat links</b></div>
+      <ul class="links">
+        <li><a href="https://github.com/iamzainrizwan/patch-wednesday"><span class="label">the app</span><span class="note2">template repo + tests</span></a></li>
+        <li><a href="https://discord.gg/FMy64eRAqY"><span class="label">discord</span><span class="note2">stuck? ask here</span></a></li>
+        <li><a href="/"><span class="label">cybersoc home</span><span class="note2">kclcybersoc.org.uk</span></a></li>
+      </ul>
+    </section>
+
+  </div>
+  <div class="status"><span class="seg">[patch wednesday]</span><span class="fill">5 bugs &middot; blue team &middot; fix one function each</span><span class="seg">kclsu</span></div>
+</main>
+
+<script>
+// ---- theme toggle: same behaviour as the landing page, shared storage key ----
+(function () {
+  const root = document.documentElement, btn = document.getElementById('theme');
+  try { const s = localStorage.getItem('cybersoc-theme'); if (s) root.setAttribute('data-theme', s); } catch {}
+  btn.addEventListener('click', () => {
+    const dark = getComputedStyle(root).getPropertyValue('--paper').trim().startsWith('#0');
+    const next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('cybersoc-theme', next); } catch {}
+  });
+})();
+
+// ---- seed data, mirrors the app's data.py ----
+const USERS = { alice:['alpaca','member'], bob:['bonobo','member'], admin:['hunter2','admin'] };
+const NOTES = {
+  1:['alice','alice: remember to renew kclsu membership'],
+  2:['alice','alice: ctf team name ideas'],
+  3:['bob','bob: my locker code is 1337'],
+  4:['admin','admin: committee meeting notes, members only'],
+};
+// a tiny fake filesystem for the traversal lab. public dir is content/files.
+const FS = {
+  'content/files/welcome.txt':'welcome to the kcl cybersoc members portal. nothing secret in here.',
+  'content/files/termcard.txt':'term card: ctf nights every other wednesday, see discord.',
+  'content/secret.txt':'FLAG: this file lives OUTSIDE the public folder.\nif a download can reach it, the path traversal still works.',
+  'etc/passwd':'root:x:0:0:root:/root:/bin/bash\ncybersoc:x:1000:1000::/home/cybersoc:/bin/bash',
+};
+const PUBLIC = 'content/files';
+
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+// ---- output helpers ----
+function render(out, lines) {
+  out.innerHTML = lines.map(l => {
+    if (l.v) return `<span class="line verdict ${l.v}">${esc(l.t)}</span>`;
+    if (l.muted) return `<span class="line muted">${esc(l.t)}</span>`;
+    if (l.q) return `<span class="line q">${esc(l.t)}</span>`;
+    return `<span class="line">${esc(l.t)}</span>`;
+  }).join('');
+}
+
+// =====================================================================
+// 1. SQL injection: evaluate the WHERE expression the app would build.
+//    vulnerable mode substitutes input straight into the SQL text, then
+//    evaluates it per row (so tautologies and -- comments bite). patched
+//    mode is a parameterized exact match.
+// =====================================================================
+function sqlBool(expr, row) {
+  // tiny recursive-descent evaluator for: 'str' / number / username / password,
+  // with = <> != , AND OR NOT , parentheses. enough to model the real injection.
+  let i = 0;
+  const toks = [];
+  const src = expr;
+  while (i < src.length) {
+    const c = src[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (c === "'") { let j = i+1, s=''; while (j<src.length && src[j] !== "'") { s+=src[j]; j++; } toks.push({t:'str',v:s}); i = j+1; continue; }
+    if (c === '(' || c === ')') { toks.push({t:c}); i++; continue; }
+    if (c === '=') { toks.push({t:'op',v:'='}); i++; continue; }
+    if (c === '<' && src[i+1] === '>') { toks.push({t:'op',v:'<>'}); i+=2; continue; }
+    if (c === '!' && src[i+1] === '=') { toks.push({t:'op',v:'<>'}); i+=2; continue; }
+    if (/[0-9]/.test(c)) { let j=i, n=''; while (j<src.length && /[0-9]/.test(src[j])) { n+=src[j]; j++; } toks.push({t:'num',v:n}); i=j; continue; }
+    if (/[a-zA-Z_]/.test(c)) { let j=i, w=''; while (j<src.length && /[a-zA-Z_0-9]/.test(src[j])) { w+=src[j]; j++; }
+      const u = w.toUpperCase();
+      if (u==='AND'||u==='OR'||u==='NOT') toks.push({t:u});
+      else toks.push({t:'id',v:w});
+      i=j; continue; }
+    // any stray punctuation (the attacker's leftover quote etc.) -> syntax error
+    throw new Error('SQL syntax error near "'+c+'"');
+  }
+  let p = 0;
+  const peek = () => toks[p];
+  const val = tk => {
+    if (tk.t==='str') return {s:tk.v};
+    if (tk.t==='num') return {s:tk.v, n:parseInt(tk.v,10)};
+    if (tk.t==='id') {
+      if (tk.v==='username') return {s:row.username};
+      if (tk.v==='password') return {s:row.password};
+      return {s:''}; // unknown column
+    }
+    throw new Error('unexpected token');
+  };
+  function primary() {
+    const tk = peek();
+    if (!tk) throw new Error('unexpected end');
+    if (tk.t==='(') { p++; const v = orExpr(); if (!peek()||peek().t!==')') throw new Error('missing )'); p++; return v; }
+    if (tk.t==='NOT') { p++; return !primary(); }
+    // an operand, optionally a comparison
+    p++; const left = val(tk);
+    if (peek() && peek().t==='op') { const op = peek().v; p++; const rtk = peek();
+      if (!rtk) throw new Error('missing operand'); p++; const right = val(rtk);
+      const eq = left.s === right.s; return op==='=' ? eq : !eq; }
+    // bare operand truthiness: non-zero number is true, else false
+    return left.n !== undefined ? left.n !== 0 : false;
+  }
+  function andExpr() { let v = primary(); while (peek() && peek().t==='AND') { p++; const r = primary(); v = v && r; } return v; }
+  function orExpr() { let v = andExpr(); while (peek() && peek().t==='OR') { p++; const r = andExpr(); v = v || r; } return v; }
+  const result = orExpr();
+  if (p !== toks.length) throw new Error('trailing tokens');
+  return result;
+}
+
+function runSqli(lab, mode) {
+  const user = lab.querySelector('[data-in=user]').value;
+  const pass = lab.querySelector('[data-in=pass]').value;
+  const out = lab.querySelector('[data-out]');
+  if (mode === 'safe') {
+    // parameterized: input is data, never query text. exact match only.
+    const row = USERS[user];
+    const ok = row && row[0] === pass;
+    render(out, [
+      { t: 'query: SELECT username FROM users WHERE username = ? AND password = ?', q:true },
+      { t: `params: [${JSON.stringify(user)}, ${JSON.stringify(pass)}]`, muted:true },
+      ok ? { t:`logged in as ${user} (real credentials)`, v:'good' }
+         : { t:'wrong username or password', v:'good' },
+    ]);
+    return;
+  }
+  // vulnerable: paste straight in, strip -- comment, evaluate per row.
+  let where = `username = '${user}' AND password = '${pass}'`;
+  const cut = where.indexOf('--');
+  const shown = where;
+  if (cut !== -1) where = where.slice(0, cut);
+  let hit = null, err = null;
+  try {
+    for (const name of Object.keys(USERS)) {
+      if (sqlBool(where, { username:name, password:USERS[name][0] })) { hit = name; break; }
+    }
+  } catch (e) { err = e.message; }
+  const lines = [{ t:`query: SELECT username FROM users WHERE ${shown}`, q:true }];
+  if (cut !== -1) lines.push({ t:'         (everything after -- is now a comment)', muted:true });
+  if (err) lines.push({ t:`login failed (${err})`, v:'good' });
+  else if (hit) {
+    const injected = !(USERS[user] && USERS[user][0] === pass);
+    lines.push(injected
+      ? { t:`logged in as ${hit} — no valid password. injection succeeded.`, v:'bad' }
+      : { t:`logged in as ${hit} (real credentials)`, v:'good' });
+  } else lines.push({ t:'wrong username or password', v:'good' });
+  render(out, lines);
+}
+
+// =====================================================================
+// 2. IDOR
+// =====================================================================
+function runIdor(lab, mode) {
+  const raw = lab.querySelector('[data-in=id]').value.trim();
+  const out = lab.querySelector('[data-out]');
+  const me = 'alice';
+  const id = parseInt(raw, 10);
+  const note = NOTES[id];
+  if (!note) { render(out, [{ t:`GET /notes/${esc(raw)}`, q:true }, { t:'404 no such note', v:'good' }]); return; }
+  const [owner, text] = note;
+  if (mode === 'safe' && owner !== me) {
+    render(out, [
+      { t:`GET /notes/${id}  (you are ${me})`, q:true },
+      { t:`note ${id} belongs to ${owner}`, muted:true },
+      { t:'403 not your note', v:'good' },
+    ]);
+    return;
+  }
+  const leaked = owner !== me;
+  render(out, [
+    { t:`GET /notes/${id}  (you are ${me})`, q:true },
+    { t:`note ${id}: ${text}`, },
+    leaked ? { t:`you just read ${owner}'s private note. IDOR succeeded.`, v:'bad' }
+           : { t:'(your own note — fine)', v:'good' },
+  ]);
+}
+
+// =====================================================================
+// 3. path traversal: resolve the joined path, then (safe) confine it.
+// =====================================================================
+function resolvePath(base, name) {
+  // mirror os.path.join + normpath, including url-decoding and absolute names.
+  let decoded = name;
+  try { decoded = decodeURIComponent(name); } catch {}
+  let full = /^([/]|[A-Za-z]:)/.test(decoded) ? decoded.replace(/^\/+/, '') : base + '/' + decoded;
+  const parts = [];
+  for (const seg of full.split('/')) {
+    if (seg === '' || seg === '.') continue;
+    if (seg === '..') parts.pop();
+    else parts.push(seg);
+  }
+  return parts.join('/');
+}
+function runTraversal(lab, mode) {
+  const name = lab.querySelector('[data-in=name]').value;
+  const out = lab.querySelector('[data-out]');
+  const resolved = resolvePath(PUBLIC, name);
+  const inside = resolved === PUBLIC || resolved.startsWith(PUBLIC + '/');
+  if (mode === 'safe' && !inside) {
+    render(out, [
+      { t:`GET /files/download?name=${esc(name)}`, q:true },
+      { t:`resolves to: ${resolved}`, muted:true },
+      { t:`outside ${PUBLIC}/ — 403 access denied`, v:'good' },
+    ]);
+    return;
+  }
+  const body = FS[resolved];
+  if (body === undefined) { render(out, [{ t:`GET /files/download?name=${esc(name)}`, q:true }, { t:'404 no such file', muted:true }]); return; }
+  const escaped = !inside;
+  render(out, [
+    { t:`GET /files/download?name=${esc(name)}`, q:true },
+    { t:`served: ${resolved}`, muted:true },
+    { t:body },
+    escaped ? { t:'that file is outside the public folder. traversal succeeded.', v:'bad' }
+            : { t:'(a public file — fine)', v:'good' },
+  ]);
+}
+
+// =====================================================================
+// 4. open redirect
+// =====================================================================
+function runRedirect(lab, mode) {
+  const next = lab.querySelector('[data-in=next]').value;
+  const out = lab.querySelector('[data-out]');
+  // model how a browser reads Location: leading // or scheme => another host.
+  let host = '';
+  try { const u = new URL(next, 'https://kclcybersoc.org.uk'); if (u.origin !== 'https://kclcybersoc.org.uk') host = u.host || u.protocol; } catch {}
+  const offsite = /^\s*(https?:|\/\/|[a-z][a-z0-9+.\-]*:)/i.test(next) || next.startsWith('//');
+  const target = (mode === 'safe')
+    ? ((next && next.startsWith('/') && !next.startsWith('//')) ? next : '/')
+    : (next || '/');
+  if (mode === 'safe') {
+    render(out, [
+      { t:`GET /go?next=${esc(next)}`, q:true },
+      { t:`302 Location: ${target}`, },
+      offsite ? { t:'off-site value rejected — stayed on kclcybersoc.org.uk', v:'good' }
+              : { t:'(a local path — fine)', v:'good' },
+    ]);
+    return;
+  }
+  render(out, [
+    { t:`GET /go?next=${esc(next)}`, q:true },
+    { t:`302 Location: ${target}`, },
+    offsite ? { t:`browser leaves our site for ${host || next}. open redirect — phish-ready.`, v:'bad' }
+            : { t:'(a local path — fine)', v:'good' },
+  ]);
+}
+
+// =====================================================================
+// 5. command injection: SIMULATED. no shell runs — we only parse the
+//    string to show which commands a real shell would split out, and
+//    print canned output for a couple of them.
+// =====================================================================
+const FAKE_CMD = {
+  id: 'uid=1000(cybersoc) gid=1000(cybersoc) groups=1000(cybersoc)',
+  whoami: 'cybersoc',
+  ls: 'app.py  challenges  content  secret.txt',
+  pwd: '/srv/portal',
+};
+function fakeRun(cmd) {
+  const c = cmd.trim();
+  if (c.startsWith('echo ')) return c.slice(5);
+  const name = c.split(/\s+/)[0];
+  if (name === 'cat') { const f = c.split(/\s+/)[1] || ''; return (FS['content/'+f.replace(/^.*\//,'')] ?? FS[f] ?? 'cat: '+f+': No such file or directory'); }
+  if (FAKE_CMD[name] !== undefined) return FAKE_CMD[name];
+  return name ? name + ': command not found' : '';
+}
+function runCmdi(lab, mode) {
+  const host = lab.querySelector('[data-in=host]').value;
+  const out = lab.querySelector('[data-out]');
+  if (mode === 'safe') {
+    // list args, no shell: the whole input is a single argument to echo.
+    render(out, [
+      { t:`subprocess.run(["echo", "resolving", ${JSON.stringify(host)}])`, q:true },
+      { t:`resolving ${host}`, },
+      { t:'input stayed one argument — nothing extra ran.', v:'good' },
+    ]);
+    return;
+  }
+  // vulnerable: shell=True. split on ; && || | and run each piece.
+  const built = `echo resolving ${host}`;
+  const pieces = built.split(/\s*(?:;|&&|\|\||\|)\s*/).filter(Boolean);
+  const lines = [{ t:`subprocess.run(${JSON.stringify(built)}, shell=True)`, q:true }];
+  let extra = false;
+  pieces.forEach((pc, idx) => {
+    const res = fakeRun(pc);
+    if (idx > 0) extra = true;
+    if (res) lines.push({ t:res });
+  });
+  lines.push(extra
+    ? { t:'a second command ran from your input. command injection succeeded.', v:'bad' }
+    : { t:'(just the lookup — fine)', v:'good' });
+  render(out, lines);
+}
+
+// =====================================================================
+// wiring: each lab runs its handler, remembers its mode, and the preset
+// payload buttons fill the inputs (and fire a run).
+// =====================================================================
+const HANDLERS = { sqli:runSqli, idor:runIdor, traversal:runTraversal, redirect:runRedirect, cmdi:runCmdi };
+
+document.querySelectorAll('.lab').forEach(lab => {
+  const kind = lab.dataset.lab;
+  const run = () => HANDLERS[kind](lab, lab.dataset.mode || 'vuln');
+  lab.dataset.mode = 'vuln';
+
+  lab.querySelector('.run').addEventListener('click', run);
+  lab.querySelectorAll('input[type=text]').forEach(inp =>
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); run(); } }));
+
+  lab.querySelectorAll('.toggle button').forEach(btn =>
+    btn.addEventListener('click', () => {
+      lab.dataset.mode = btn.dataset.mode;
+      lab.querySelectorAll('.toggle button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+      run();
+    }));
+
+  const pay = lab.querySelector('[data-payloads]');
+  if (pay) pay.querySelectorAll('button').forEach(btn =>
+    btn.addEventListener('click', () => {
+      for (const [k, v] of Object.entries(btn.dataset)) {
+        const field = lab.querySelector(`[data-in=${k}]`);
+        if (field) field.value = v;
+      }
+      run();
+    }));
+
+  run(); // show the default exploit result on load
+});
+</script>
+</body>
+</html>
