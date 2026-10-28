@@ -75,6 +75,11 @@ h1 { font-family:'JetBrains Mono',monospace; font-weight:800; line-height:1.12;
 .event .name { font-weight:700; font-size:19px; }
 .event .when { color:var(--faint); display:block; margin-top:4px; }
 .event .blurb { color:var(--faint); font-size:14px; display:block; margin-top:10px; }
+a.event { display:block; text-decoration:none; color:var(--paper); }
+a.event .go { display:block; margin-top:12px; font-weight:700; font-size:14px; }
+a.event .go::after { content:" ->"; }
+a.event:hover, a.event:focus-visible { outline:none; }
+a.event:hover .go, a.event:focus-visible .go { text-decoration:underline; }
 
 section { margin-top:44px; }
 .lead { max-width:68ch; }
@@ -145,11 +150,12 @@ section { margin-top:44px; }
         </aside>
         <div>
           <div class="prompt">$ <b>cat next-event</b></div>
-          <div class="event">
+          <a class="event" href="/patch-wednesday">
             <span class="name">patch wednesday</span>
             <span class="when">wed 28 oct &middot; 13:00&ndash;15:00 &middot; bush house (s) 6.03</span>
             <span class="blurb">blue team: we hand you a broken web app, you write the fix and ship it. bring a laptop. no experience needed.</span>
-          </div>
+            <span class="go">run the labs</span>
+          </a>
         </div>
       </div>
     </header>
