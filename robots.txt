@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kclcybersoc.org.uk/sitemap.xml

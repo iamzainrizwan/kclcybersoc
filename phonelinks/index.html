@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>kcl cybersoc links</title>
 <meta name="description" content="kcl cyber security society: discord, instagram, linkedin, membership and what's on.">
+<link rel="canonical" href="https://kclcybersoc.org.uk/phonelinks/">
+<meta property="og:image" content="https://kclcybersoc.org.uk/assets/logo.png">
 <meta property="og:title" content="kcl cyber security society">
 <meta property="og:description" content="discord, instagram, linkedin, membership and what's on.">
 <meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
@@ -91,9 +93,6 @@ a.link.hot:hover, a.link.hot:focus-visible { background:var(--paper); color:var(
 
 // one group per heading; hot: true draws the button inverted (use it for whatever's on this week)
 const LINKS = [
-  { heading: "what's on", items: [
-    { label: 'patch wednesday', note: 'wed 28.10 · 13:00', url: 'https://github.com/iamzainrizwan/patch-wednesday', hot: true },
-  ]},
   { heading: 'join', items: [
     { label: 'discord', note: 'events + chat', url: 'https://discord.gg/FMy64eRAqY' },
     { label: 'kclsu membership', note: 'free', url: 'https://www.kclsu.org/groups/activities/join/group/kcss18750' },
@@ -101,6 +100,9 @@ const LINKS = [
   { heading: 'follow', items: [
     { label: 'instagram', note: '@kclcybersociety', url: 'https://www.instagram.com/kclcybersociety/' },
     { label: 'linkedin', note: 'kcl cyber security society', url: 'https://www.linkedin.com/company/kcl-cyber-security-society/' },
+  ]},
+  { heading: 'past-events', items: [
+    { label: 'patch wednesday', note: '28.10.26 · blue team', url: 'https://kclcybersoc.org.uk/patch-wednesday' },
   ]},
 ];
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
