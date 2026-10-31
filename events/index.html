@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>events ~ kcl cybersoc</title>
+<meta name="description" content="kcl cyber security society events: ctfs, workshops and talks at king's college london. what's on now, what's coming up, and everything we've run.">
+<link rel="canonical" href="https://kclcybersoc.org.uk/events/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://kclcybersoc.org.uk/events/">
+<meta property="og:image" content="https://kclcybersoc.org.uk/assets/logo.png">
+<meta property="og:title" content="events ~ kcl cybersoc">
+<meta property="og:description" content="what's on now, what's coming up, and everything we've run.">
+<meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0c0c0c" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/assets/logo.png">
+<style>
+/* events page, same house style as the landing page. house style: terminal window, black on off-white,
+   with a dark theme. wide two-column desktop dashboard, lean single-column mobile. */
+@font-face { font-family:'IBM Plex Mono'; font-weight:400; src:url(/fonts/IBMPlexMono-400.woff2) format('woff2'); }
+@font-face { font-family:'IBM Plex Mono'; font-weight:700; src:url(/fonts/IBMPlexMono-700.woff2) format('woff2'); }
+@font-face { font-family:'JetBrains Mono'; font-weight:800; src:url(/fonts/JetBrainsMono-800.woff2) format('woff2'); }
+
+/* ---- theme tokens: swap ink<->paper for dark. inverted blocks follow for free ----
+   color-scheme tells the browser (and auto-dark extensions like dark reader) that
+   the site handles both, so they leave the styling alone. */
+:root { color-scheme:light dark;
+        --ink:#0a0a0a; --paper:#fbfbf8; --dim:#8c8c88; --line:#0a0a0a;
+        --faint:color-mix(in srgb, var(--paper) 70%, var(--ink)); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --ink:#ededea; --paper:#0c0c0c; --dim:#7d7d79; --line:#ededea; }
+}
+:root[data-theme="light"] { color-scheme:light; }
+:root[data-theme="dark"] { color-scheme:dark; --ink:#ededea; --paper:#0c0c0c; --dim:#7d7d79; --line:#ededea; }
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body { background:var(--paper); color:var(--ink); }
+body { font-family:'IBM Plex Mono',monospace; font-size:16px; line-height:1.5; padding:24px 16px; display:flex; justify-content:center; }
+.win { width:100%; max-width:1180px; border:2px solid var(--line); background:var(--paper); }
+.chrome { display:flex; align-items:center; gap:10px; height:44px; padding:0 14px; border-bottom:2px solid var(--line); }
+.dots { display:flex; gap:5px; }
+.dots i { width:11px; height:11px; border:2px solid var(--ink); border-radius:50%; }
+.dots i:first-child { background:var(--ink); }
+.chrome .title { flex:1; text-align:center; font-size:14px; }
+.theme { font-family:inherit; font-size:13px; background:none; border:2px solid var(--ink); color:var(--ink);
+         padding:3px 10px; cursor:pointer; }
+.theme:hover, .theme:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
+.body { padding:34px 26px 30px; }
+
+.logo { width:62px; height:75px; background:var(--ink); margin-bottom:16px;
+        -webkit-mask:url(/assets/shield-mask.png) center/contain no-repeat;
+        mask:url(/assets/shield-mask.png) center/contain no-repeat; }
+.kicker { color:var(--dim); font-size:14px; }
+h1 { font-family:'JetBrains Mono',monospace; font-weight:800; line-height:1.12;
+     font-size:clamp(38px, 9vw, 66px); letter-spacing:-.02em; margin:8px 0 16px; }
+.inv { background:var(--ink); color:var(--paper); padding:.02em .1em .08em; -webkit-box-decoration-break:clone; box-decoration-break:clone; }
+.tagline { font-size:clamp(16px, 2.2vw, 19px); max-width:42ch; }
+
+.cta { display:flex; flex-wrap:wrap; gap:12px; margin:24px 0 2px; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:12px 18px; border:2px solid var(--ink);
+       color:var(--ink); text-decoration:none; font-weight:700; }
+.btn.solid { background:var(--ink); color:var(--paper); }
+.btn:hover, .btn:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
+.btn.solid:hover, .btn.solid:focus-visible { background:var(--paper); color:var(--ink); }
+
+.prompt { color:var(--dim); font-size:14px; margin-bottom:12px; }
+.prompt b { color:var(--ink); font-weight:400; }
+
+/* hero: two columns on desktop. left = brand, right = specs + next event. */
+.hero { display:grid; grid-template-columns:1fr; gap:24px; align-items:stretch; }
+.hero-side { display:flex; flex-direction:column; gap:20px; }
+.specs { display:none; border:2px solid var(--ink); padding:16px; }
+.specs .h { font-size:13px; color:var(--dim); margin-bottom:8px; }
+.specs .srow { display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px dashed var(--dim); }
+.specs .srow:last-child { border-bottom:0; }
+.specs .k { color:var(--dim); } .specs .v { font-weight:700; text-align:right; }
+
+.event { border:2px solid var(--ink); background:var(--ink); color:var(--paper); padding:18px; }
+.event .name { font-weight:700; font-size:19px; }
+.event .when { color:var(--faint); display:block; margin-top:4px; }
+.event .blurb { color:var(--faint); font-size:14px; display:block; margin-top:10px; }
+a.event { display:block; text-decoration:none; color:var(--paper); }
+a.event .go { display:block; margin-top:12px; font-weight:700; font-size:14px; }
+a.event .go::after { content:" ->"; }
+a.event:hover, a.event:focus-visible { outline:none; }
+a.event:hover .go, a.event:focus-visible .go { text-decoration:underline; }
+
+section { margin-top:44px; }
+.lead { max-width:68ch; }
+
+.grid { display:grid; grid-template-columns:1fr; gap:12px; }
+.card { border:2px solid var(--ink); padding:16px 16px 14px; }
+.card h3 { font-size:16px; }
+.card p { color:var(--dim); font-size:14px; margin-top:4px; }
+
+.links { list-style:none; display:grid; grid-template-columns:1fr; gap:10px; }
+.links a { display:flex; align-items:baseline; gap:10px; padding:12px 14px; border:2px solid var(--ink);
+           color:var(--ink); text-decoration:none; }
+.links a .label { flex:1; font-weight:700; }
+.links a .note { color:var(--dim); font-size:13px; }
+.links a:hover, .links a:focus-visible { background:var(--ink); color:var(--paper); outline:none; }
+.links a:hover .note, .links a:focus-visible .note { color:var(--faint); }
+.links.archive a { flex-direction:column; gap:2px; }
+
+.status { display:flex; font-size:13px; border-top:2px solid var(--line); }
+.status span { padding:9px 13px; white-space:nowrap; }
+.status .seg { font-weight:700; }
+.status .fill { flex:1; background:var(--ink); color:var(--paper); overflow:hidden; text-overflow:ellipsis; }
+
+/* ---- tablet ---- */
+@media (min-width:680px) {
+  .body { padding:44px 40px 36px; }
+  .grid { grid-template-columns:1fr 1fr; }
+  .links { grid-template-columns:1fr 1fr; }
+}
+/* ---- desktop: use the width ---- */
+@media (min-width:900px) {
+  .hero { grid-template-columns:1.5fr 1fr; gap:36px; }
+  .specs { display:block; }
+  .hero-side { justify-content:space-between; }
+  .grid { grid-template-columns:repeat(4, 1fr); }
+  .links { grid-template-columns:repeat(4, 1fr); }
+  .lead { font-size:18px; }
+}
+
+.chrome a.back { color:var(--dim); text-decoration:none; font-size:13px; }
+.chrome a.back:hover { color:var(--ink); }
+.ev { list-style:none; display:grid; gap:12px; }
+.ev li { border:2px solid var(--ink); display:grid; grid-template-columns:1fr; }
+.ev .date { padding:12px 16px; border-bottom:2px solid var(--ink); font-weight:700; }
+.ev .date small { display:block; font-weight:400; color:var(--dim); font-size:13px; }
+.ev .info { padding:12px 16px 14px; }
+.ev .info h3 { font-size:17px; }
+.ev .info .meta { color:var(--dim); font-size:14px; margin-top:2px; }
+.ev .info p { font-size:14px; margin-top:8px; max-width:70ch; }
+.ev .info a { color:var(--ink); font-weight:700; font-size:14px; display:inline-block; margin-top:10px; }
+.ev.live li { border-color:#c4141a; }
+.ev.live .date { background:#c4141a; color:#fff; border-bottom-color:#c4141a; }
+.ev.live .date small { color:#fff; }
+.ev.upcoming .date { background:var(--ink); color:var(--paper); }
+.ev.upcoming .date small { color:var(--faint); }
+.ev.past li { border-style:dashed; }
+.ev.past .date { border-bottom-style:dashed; }
+.empty { color:var(--dim); border:2px dashed var(--dim); padding:14px 16px; }
+.empty a { color:var(--ink); }
+@media (min-width:680px) {
+  .ev li { grid-template-columns:190px 1fr; }
+  .ev .date { border-bottom:0; border-right:2px solid var(--ink); }
+  .ev.past .date { border-right-style:dashed; }
+  .ev.live .date { border-right-color:#c4141a; }
+}
+</style>
+<script src="/assets/events.js"></script>
+</head>
+<body>
+<main class="win">
+  <div class="chrome">
+    <div class="dots"><i></i><i></i><i></i></div>
+    <div class="title">kclcybersoc ~ events</div>
+    <a class="back" href="/">cd ..</a>
+    <button class="theme" id="theme" type="button" aria-label="toggle dark and light mode">theme</button>
+  </div>
+  <div class="body">
+    <header>
+      <div class="logo" role="img" aria-label="kcl cyber security society logo"></div>
+      <div class="kicker">// kcl cyber security society</div>
+      <h1><span class="inv">events</span></h1>
+      <p class="tagline">ctfs, workshops and talks. past, present and future. new events go up on the discord first.</p>
+    </header>
+    <div id="events"></div>
+  </div>
+  <div class="status"><span class="seg">[events]</span><span class="fill" id="count">kclcybersoc.org.uk/events</span><span class="seg">kclsu</span></div>
+</main>
+<script>
+// theme toggle: system by default, click to override, remembered per browser.
+(function () {
+  const root = document.documentElement, btn = document.getElementById('theme');
+  try { const s = localStorage.getItem('cybersoc-theme'); if (s) root.setAttribute('data-theme', s); } catch {}
+  btn.addEventListener('click', () => {
+    const dark = getComputedStyle(root).getPropertyValue('--paper').trim().startsWith('#0');
+    const next = dark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('cybersoc-theme', next); } catch {}
+  });
+})();
+</script>
+<script>
+(function () {
+  const { split, when, esc } = window.cybersocEvents;
+  function card(e) {
+    const ext = e.url && !e.url.startsWith('/');
+    const [d, t] = when(e).split(' · ');
+    return `<li><div class="date">${esc(d)}<small>${esc(t)}</small></div><div class="info">
+      <h3>${esc(e.name)}</h3><div class="meta">${esc(e.kind || '')}${e.where ? ' · ' + esc(e.where) : ''}</div>
+      ${e.blurb ? `<p>${esc(e.blurb)}</p>` : ''}
+      ${e.url ? `<a href="${esc(e.url)}"${ext ? ' target="_blank" rel="noopener"' : ''}>${ext ? 'event page' : 'open'} -&gt;</a>` : ''}</div></li>`;
+  }
+  function render() {
+    const s = split();
+    const sec = (cmd, cls, items, empty) => `<section><div class="prompt">$ <b>${cmd}</b></div>` +
+      (items.length ? `<ul class="ev ${cls}">${items.map(card).join('')}</ul>` : `<p class="empty">${empty}</p>`) + '</section>';
+    document.getElementById('events').innerHTML =
+      (s.live.length ? sec('ls events/live-now/', 'live', s.live, '') : '') +
+      sec('ls events/upcoming/', 'upcoming', s.upcoming, 'nothing scheduled yet. watch the <a href="https://discord.gg/FMy64eRAqY">discord</a> and <a href="https://www.instagram.com/kclcybersociety/">instagram</a>.') +
+      sec('ls events/past/', 'past', s.past, 'nothing here yet.');
+    document.getElementById('count').textContent = `${s.live.length} live · ${s.upcoming.length} upcoming · ${s.past.length} past`;
+  }
+  render(); setInterval(render, 30000);
+})();
+</script>
+</body>
+</html>

@@ -132,6 +132,7 @@ section { margin-top:44px; }
   .lead { font-size:18px; }
 }
 </style>
+<script src="/assets/events.js"></script>
 </head>
 <body>
 <main class="win">
@@ -164,7 +165,7 @@ section { margin-top:44px; }
         </aside>
         <div>
           <div class="prompt">$ <b>cat next-event</b></div>
-          <div class="event">
+          <div class="event" id="next-event">
             <span class="name">nothing scheduled yet</span>
             <span class="blurb">the next event goes up on the discord and instagram first.</span>
           </div>
@@ -190,9 +191,9 @@ section { margin-top:44px; }
     </section>
 
     <section>
-      <div class="prompt">$ <b>ls past-events/</b></div>
-      <ul class="links archive">
-        <li><a href="/patch-wednesday"><span class="label">patch wednesday</span><span class="note">28.10.26 &middot; blue team</span></a></li>
+      <div class="prompt">$ <b>ls events/</b></div>
+      <ul class="links archive" id="recent-events">
+        <li><a href="/events/"><span class="label">all events</span><span class="note">past, present and future</span></a></li>
       </ul>
     </section>
 
@@ -220,6 +221,28 @@ section { margin-top:44px; }
     root.setAttribute('data-theme', next);
     try { localStorage.setItem('cybersoc-theme', next); } catch {}
   });
+})();
+</script>
+<script>
+// next-event box + recent events, from /assets/events.js
+(function () {
+  const { split, when, esc } = window.cybersocEvents;
+  function render() {
+    const s = split(), e = s.live[0] || s.upcoming[0], box = document.getElementById('next-event');
+    if (e) {
+      const a = document.createElement('a');
+      a.className = 'event'; a.id = 'next-event'; a.href = e.url || '/events/';
+      a.innerHTML = `<span class="name">${s.live[0] ? 'live now: ' : ''}${esc(e.name)}</span>` +
+        `<span class="when">${esc(when(e))}${e.where ? ' · ' + esc(e.where) : ''}</span>` +
+        (e.blurb ? `<span class="blurb">${esc(e.blurb)}</span>` : '') + '<span class="go">more</span>';
+      box.replaceWith(a);
+    }
+    const items = [...s.live, ...s.upcoming.slice(0, 2), ...s.past.slice(0, 3)].slice(0, 3);
+    document.getElementById('recent-events').innerHTML = items.map(e =>
+      `<li><a href="${esc(e.url || '/events/')}"><span class="label">${esc(e.name)}</span><span class="note">${esc(when(e))}</span></a></li>`).join('') +
+      '<li><a href="/events/"><span class="label">all events</span><span class="note">past, present and future</span></a></li>';
+  }
+  render();
 })();
 </script>
 </body>

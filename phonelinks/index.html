@@ -65,6 +65,7 @@ a.link.hot:hover, a.link.hot:focus-visible { background:var(--paper); color:var(
 .status .seg { font-weight:700; }
 .status .fill { flex:1; background:var(--ink); color:var(--paper); overflow:hidden; text-overflow:ellipsis; }
 </style>
+<script src="/assets/events.js"></script>
 </head>
 <body>
 <main class="win">
@@ -101,10 +102,16 @@ const LINKS = [
     { label: 'instagram', note: '@kclcybersociety', url: 'https://www.instagram.com/kclcybersociety/' },
     { label: 'linkedin', note: 'kcl cyber security society', url: 'https://www.linkedin.com/company/kcl-cyber-security-society/' },
   ]},
-  { heading: 'past-events', items: [
-    { label: 'patch wednesday', note: '28.10.26 · blue team', url: 'https://kclcybersoc.org.uk/patch-wednesday' },
-  ]},
 ];
+// events group: whatever's live or next (inverted), then the full list. data lives in /assets/events.js
+(function () {
+  const { split, when } = window.cybersocEvents, s = split();
+  const items = [...s.live, ...s.upcoming.slice(0, 1)].slice(0, 2).map(e => ({
+    label: e.name, note: when(e), hot: true,
+    url: e.url ? new URL(e.url, 'https://kclcybersoc.org.uk').href : 'https://kclcybersoc.org.uk/events/' }));
+  items.push({ label: 'all events', note: 'past, present and future', url: 'https://kclcybersoc.org.uk/events/' });
+  LINKS.unshift({ heading: 'events', items });
+})();
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 document.getElementById('links').innerHTML = LINKS.map(g => `
   <div class="prompt">$ ls <b>${esc(g.heading)}/</b></div>
